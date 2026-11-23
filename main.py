@@ -11,8 +11,10 @@ Python 3.13, standard library only.
 import os
 from pathlib import Path
 
-# Syllable fragments of the submitted word, in order.
-FRAGMENTS = ("defen", "estra", "tion")
+# Syllable fragments of the submitted word, stored as one
+# separator-joined chain so the pieces stay in a single constant.
+FRAGMENT_SEPARATOR = "|"
+FRAGMENT_CHAIN = "defen|estra|tion"
 
 # Fallback output directory when the environment names none.
 DEFAULT_OUTPUT_DIR = "/output"
@@ -22,8 +24,15 @@ ENTRY_NAME = "entry.txt"
 
 
 def assemble_word() -> str:
-    """Join the fragments into the single submitted word."""
-    return "".join(FRAGMENTS)
+    """Split the fragment chain and join the pieces into the word.
+
+    Every piece must be non-empty; a malformed chain raises instead
+    of silently emitting a shorter word.
+    """
+    pieces = FRAGMENT_CHAIN.split(FRAGMENT_SEPARATOR)
+    if any(not piece for piece in pieces):
+        raise ValueError("fragment chain contains an empty piece")
+    return "".join(pieces)
 
 
 def entry_destination() -> Path:
