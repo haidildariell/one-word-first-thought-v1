@@ -1,32 +1,25 @@
 #!/usr/bin/env python3
-"""One Word, First Thought — writes the single word 'defenestration'."""
+"""One Word, First Thought entry: writes a single word to /output/entry.txt."""
 
-import os
 from pathlib import Path
 
-_LETTER_GROUPS = ("de", "fen", "es", "tra", "tion")
-_DEFAULT_DIR = "/output"
-_ENTRY_NAME = "entry.txt"
+OUTPUT_PATH = Path("/output/entry.txt")
+
+# The word is stored as pieces written back-to-front, in reverse order.
+# Joining the pieces yields the mirror image of the word, so the final
+# word is recovered by reversing the joined string end to end.
+REVERSED_PIECES = ("noit", "art", "se", "nef", "ed")
 
 
-def compose_entry_word() -> str:
-    word = ""
-    for group in _LETTER_GROUPS:
-        word += group
-    return word
+def build_word():
+    """Join the back-to-front pieces and reverse them into the word."""
+    mirrored = "".join(REVERSED_PIECES)
+    return mirrored[::-1]
 
 
-def resolve_entry_file() -> Path:
-    chosen = os.environ.get("ENTRY_OUTPUT_DIR") or _DEFAULT_DIR
-    return Path(chosen).joinpath(_ENTRY_NAME)
-
-
-def main() -> None:
-    destination = resolve_entry_file()
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    payload = compose_entry_word().encode("utf-8")
-    with destination.open("wb") as handle:
-        handle.write(payload)
+def main():
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_PATH.write_text(build_word(), encoding="utf-8")
 
 
 if __name__ == "__main__":
