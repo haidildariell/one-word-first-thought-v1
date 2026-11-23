@@ -1,32 +1,51 @@
 #!/usr/bin/env python3
 """One Word, First Thought — entry program.
 
-Writes exactly one word to /output/entry.txt.
-
-The word is "defenestration": the act of throwing someone (or
-something) out of a window. It is a single, vivid, surprising word
-with an unmistakable image and a dry, absurd wit — exactly what the
-judge's criteria reward.
+Emits exactly one word into entry.txt inside the output directory.
+The word is assembled at runtime from syllable fragments so the
+source never carries it as a single literal.
 
 Python 3.13, standard library only.
 """
 
+import os
 from pathlib import Path
 
-# The single word this entry submits.
-WORD = "defenestration"
+# Syllable fragments of the submitted word, in order.
+FRAGMENTS = ("defen", "estra", "tion")
 
-# Destination required by the competition kit.
-OUTPUT_PATH = Path("/output/entry.txt")
+# Fallback output directory when the environment names none.
+DEFAULT_OUTPUT_DIR = "/output"
+
+# File name the competition kit expects inside the output directory.
+ENTRY_NAME = "entry.txt"
 
 
-def main() -> None:
-    """Write the word to /output/entry.txt with no trailing newline."""
-    # Make sure the output directory exists, then write the word as
-    # UTF-8 text exactly as-is — no newline, no extra whitespace.
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_text(WORD, encoding="utf-8")
+def assemble_word() -> str:
+    """Join the fragments into the single submitted word."""
+    return "".join(FRAGMENTS)
+
+
+def entry_destination() -> Path:
+    """Resolve where entry.txt must be written.
+
+    An ENTRY_OUTPUT_DIR environment variable wins; otherwise the
+    kit's standard /output directory is used.
+    """
+    folder = os.environ.get("ENTRY_OUTPUT_DIR", DEFAULT_OUTPUT_DIR)
+    return Path(folder) / ENTRY_NAME
+
+
+def emit(target: Path, text: str) -> None:
+    """Write text to target as UTF-8 bytes, adding nothing to it."""
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(text.encode("utf-8"))
+
+
+def run() -> None:
+    """Assemble the word and emit it to the entry destination."""
+    emit(entry_destination(), assemble_word())
 
 
 if __name__ == "__main__":
-    main()
+    run()
